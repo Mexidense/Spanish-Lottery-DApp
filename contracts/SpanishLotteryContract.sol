@@ -6,7 +6,14 @@ import "@openzeppelin/contracts@4.9.0/token/ERC721/ERC721.sol";
 import "@openzeppelin/contracts@4.9.0/access/Ownable.sol";
 
 contract SpanishLotteryContract is ERC20, Ownable {
+    uint maxNumberOfTickets = 100000;
     address public spanishLotteryNftAddress;
+
+    uint public ticketPrice = 5;
+    mapping(address => uint[]) numberOfTicketsByPerson;
+    mapping(uint => address) dnaTicket;
+    uint randomOnce = 0;
+    uint[] purchasedTickets;
 
     constructor() ERC20("SpanishLotteryContract", "SLC") {
         _mint(address(this), 1000);
@@ -80,6 +87,34 @@ contract SpanishLotteryContract is ERC20, Ownable {
         _transfer(msg.sender, address(this), _numberOfTokens);
 
         payable(msg.sender).transfer(tokenPrice(_numberOfTokens));
+    }
+
+    function buyTickets(uint _numberOfTickets) public {
+        uint totalPrice = _numberOfTickets * ticketPrice;
+
+        require(
+            totalPrice <= balanceTokens(msg.sender),
+            "User does not have enough token to buy tickets"
+        );
+
+        _transfer(msg.sender, address(this), totalPrice);
+
+        for (uint i=0; i<_numberOfTickets; i++) {
+            // Keep in mind: This does not guarantee that a purchased ticket number can be generated again
+            uint randomTicketNumber = uint(keccak256(abi.encodePacked(block.timestamp, msg.sender, randomOnce))) % maxNumberOfTickets;
+            randomOnce++;
+
+            numberOfTicketsByPerson[msg.sender].push(randomTicketNumber);
+            purchasedTickets.push(randomTicketNumber);
+
+            dnaTicket[randomTicketNumber] = msg.sender;
+
+            SpanishLotteryTicketNft(usersSmartContract[msg.sender]).mintTicket(msg.sender, randomTicketNumber);
+        }
+    }
+
+    function getTickets(address _owner) public view returns (uint[] memory) {
+        return numberOfTicketsByPerson[_owner];
     }
 }
 
