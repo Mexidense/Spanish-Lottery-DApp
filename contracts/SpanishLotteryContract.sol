@@ -116,6 +116,19 @@ contract SpanishLotteryContract is ERC20, Ownable {
     function getTickets(address _owner) public view returns (uint[] memory) {
         return numberOfTicketsByPerson[_owner];
     }
+
+    function generateWinner() public onlyOwner {
+        uint numberOfPurchasedTickets = purchasedTickets.length;
+        require(numberOfPurchasedTickets > 0, "No winner due no participants");
+        
+        uint randomIndex = uint(uint(keccak256(abi.encodePacked(block.timestamp))) % numberOfPurchasedTickets);
+        uint chosenTicket = purchasedTickets[randomIndex];
+
+        lotteryWinner = dnaTicket[chosenTicket];
+
+        payable(lotteryWinner).transfer(address(this).balance * 95 / 100);
+        payable(owner()).transfer(address(this).balance * 5 / 100);
+    }
 }
 
 contract SpanishLotteryNft is ERC721 {
