@@ -18,7 +18,7 @@ contract SpanishLotteryContract is ERC20, Ownable {
     address public lotteryWinner;
 
     constructor() ERC20("SpanishLotteryContract", "SLC") {
-        _mint(address(this), 100000);
+        _mint(address(this), maxNumberOfTickets);
         spanishLotteryNftAddress = address(new SpanishLotteryNft());
     }
 
