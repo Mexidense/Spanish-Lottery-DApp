@@ -2,8 +2,8 @@
 pragma solidity ^0.8.24;
 
 import "@openzeppelin/contracts@4.9.0/token/ERC20/ERC20.sol";
-import "@openzeppelin/contracts@4.9.0/token/ERC721/ERC721.sol";
 import "@openzeppelin/contracts@4.9.0/access/Ownable.sol";
+import "./SpanishLotteryTicketNft.sol";
 
 contract SpanishLotteryContract is ERC20, Ownable {
     uint maxNumberOfTickets = 100000;
@@ -15,12 +15,12 @@ contract SpanishLotteryContract is ERC20, Ownable {
     uint randomOnce = 0;
     uint[] purchasedTickets;
 
+    address public lotteryWinner;
+
     constructor() ERC20("SpanishLotteryContract", "SLC") {
         _mint(address(this), 1000);
         spanishLotteryNftAddress = address(new SpanishLotteryNft());
     }
-
-    address public lotteryWinner;
 
     mapping(address => address) public usersSmartContract;
 
@@ -128,55 +128,5 @@ contract SpanishLotteryContract is ERC20, Ownable {
 
         payable(lotteryWinner).transfer(address(this).balance * 95 / 100);
         payable(owner()).transfer(address(this).balance * 5 / 100);
-    }
-}
-
-contract SpanishLotteryNft is ERC721 {
-    address public smartContractAddress;
-
-    constructor() ERC721("SpanishLotteryNFT", "SLN") {
-        smartContractAddress = msg.sender;
-    }
-
-    function safeMint(address _owner, uint256 _ticketId) public {
-        require(
-            msg.sender == SpanishLotteryContract(smartContractAddress).userInfo(_owner),
-            "Only owner smart contract can mint a NFT ticket"
-        );
-
-        _safeMint(_owner, _ticketId);
-    }
-}
-
-contract SpanishLotteryTicketNft {    
-    struct Owner {
-        address ownerAddress;
-        address smartContractAddress;
-        address smartContractNftAddress;
-        address smartContractLotteryTicketAddress;
-    }
-
-    Owner public owner;
-
-    constructor(
-        address _userAddress,
-        address _smartContractAddress,
-        address _smartContractNftAddress
-    ) {
-        owner = Owner(
-            _userAddress,
-            _smartContractAddress,
-            _smartContractNftAddress,
-            address(this)
-        );
-    }
-
-    function mintTicket(address _owner, uint _ticketId) public {
-        require(
-            msg.sender == owner.smartContractAddress,
-            "Smart contract lottery cannot create a lottery ticket"
-        );
-
-        SpanishLotteryNft(owner.smartContractNftAddress).safeMint(_owner, _ticketId);
     }
 }
