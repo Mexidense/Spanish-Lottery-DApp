@@ -1,4 +1,4 @@
-# Lottery - DApp
+# Spanish Lottery - DApp
 
 Decentralized application (DApp) to manage a Spanish lottery system using ERC20 & ERC721 tokens.
 
