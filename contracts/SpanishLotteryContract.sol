@@ -61,12 +61,12 @@ contract SpanishLotteryContract is ERC20, Ownable {
     }
 
     function buyTokens(uint256 _numberOfTokens) public payable {
+        uint256 cost = tokenPrice(_numberOfTokens);
+        require(msg.value >= cost, "Insufficient token paid");
+
         if (usersSmartContract[msg.sender] == address(0)) {
             registerUser();
         }
-
-        uint256 cost = tokenPrice(_numberOfTokens);
-        require(msg.value >= cost, "Insufficient token paid");
 
         uint256 totalAllowedTokens = balanceTokensSmartContract();
         require(
@@ -80,7 +80,7 @@ contract SpanishLotteryContract is ERC20, Ownable {
         _transfer(address(this), msg.sender, _numberOfTokens);
     }
 
-    function backTokens(uint _numberOfTokens) public payable {
+    function returnsTokens(uint _numberOfTokens) public payable {
         require(_numberOfTokens > 0, "Required tokens must be greater than zero");
         require(_numberOfTokens <= balanceTokens(msg.sender), "Required tokens must be less than number of user's tokens");
 
